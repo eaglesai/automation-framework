@@ -15,9 +15,24 @@ def driver():
     opts.add_experimental_option("excludeSwitches", ["enable-logging"])
 
     driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=opts
+        service=Service(),options=opts
     )
-    driver.implicitly_wait(5)
+    """
+    service=Service(ChromeDriverManager().install()),
+    """
+    driver.implicitly_wait(20)
     yield driver
     driver.quit()
+
+@pytest.fixture(scope="session")
+def test_data():
+    return {
+        "valid_user": {
+            "email": "fzcheck2022@gmail.com",
+            "password": "JustCheck"
+        },
+        "invalid_user": {
+            "email": "wrong@wrong.com",
+            "password": "wrongpass"
+        }
+    }
