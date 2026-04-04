@@ -1,8 +1,12 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.11'
+            args '--user root'
+        }
+    }
 
     stages {
-
         stage('Checkout') {
             steps {
                 echo 'Checking out code from GitHub...'
@@ -13,38 +17,31 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing Python dependencies...'
-                sh '''
-                apt-get update -y
-                apt-get install -y python3 python3-pip
-                pip install -r requirements.txt
-                '''
+                sh 'pip install -r requirements.txt'
             }
         }
 
         stage('Smoke Tests') {
             steps {
-                echo 'Running smoke tests...'
-                sh 'pytest -m smoke -v --html=reports/report.html --self-contained-html'
+                echo 'Running Smoke Tests...'
+                sh 'python -m pytest tests/smoke/'
             }
         }
 
         stage('Regression Tests') {
             steps {
-                echo 'Running regression tests...'
-                sh 'pytest -m regression -v'
+                echo 'Running Regression Tests...'
+                sh 'python -m pytest tests/regression/'
             }
         }
     }
 
     post {
-        success {
-            echo 'All tests passed!'
+        always {
+            echo 'Pipeline complete.'
         }
         failure {
             echo 'Some tests failed — check the report!'
-        }
-        always {
-            echo 'Pipeline complete.'
         }
     }
 }
