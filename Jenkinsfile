@@ -13,21 +13,21 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing Python dependencies...'
-                bat 'pip install -r requirements.txt'
+                sh 'pip install -r requirements.txt'
             }
         }
 
         stage('Smoke Tests') {
             steps {
                 echo 'Running smoke tests...'
-                bat 'pytest -m smoke -v --html=reports/report.html --self-contained-html'
+                sh 'pytest -m smoke -v --html=reports/report.html --self-contained-html'
             }
         }
 
         stage('Regression Tests') {
             steps {
                 echo 'Running regression tests...'
-                bat 'pytest -m regression -v'
+                sh 'pytest -m regression -v'
             }
         }
     }
