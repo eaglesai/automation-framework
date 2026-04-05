@@ -1,12 +1,19 @@
 pipeline {
     agent {
         docker {
-            image 'selenium/standalone-chrome:latest'  // Chrome + ChromeDriver built in!
+            image 'selenium/standalone-chrome:latest'
             args '--user root -v /dev/shm:/dev/shm'
         }
     }
 
+    environment {
+        TEST_EMAIL    = credentials('fzcheck2022@gmail.com')
+        TEST_PASSWORD = credentials('JustCheck')
+        BASE_URL      = 'https://www.automationexercise.com'
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
                 echo 'Checking out code from GitHub...'
@@ -21,29 +28,60 @@ pipeline {
             }
         }
 
-        stage('UI Smoke Tests') {
-            steps {
-                echo 'Running Smoke Tests...'
-                sh 'python -m pytest tests/ui/ -m smoke'
-            }
-        }
-        /*
-        stage('UI Regression Tests') {
-            steps {
-                echo 'Running Regression Tests...'
-                sh 'python -m pytest tests/ui/ -m regression'
-            }
+        stage('Parallel Test Execution') {
+            parallel {
 
+                stage('Smoke Tests') {
+                    steps {
+                        echo 'Running smoke tests...'
+                        sh '''
+                            python -m pytest tests/ui/ -m smoke \
+                                -v -n 2 \
+                                --html=reports/smoke_report.html \
+                                --self-contained-html
+                        '''
+                    }
+                }
+
+                stage('Regression Tests') {
+                    steps {
+                        echo 'Running regression tests...'
+                        sh '''
+                            python -m pytest tests/ui/ -m regression \
+                                -v -n 2 \
+                                --html=reports/regression_report.html \
+                                --self-contained-html
+                        '''
+                    }
+                }
+            }
         }
-        */
+
+        stage('Generate Allure Report') {
+            steps {
+                echo 'Generating Allure report...'
+                sh '''
+                    python -m pytest tests/ \
+                        --alluredir=allure-results \
+                        -v
+                '''
+            }
+        }
     }
 
     post {
-        always {
-            echo 'Pipeline complete.'
+        success {
+            echo 'All tests passed!'
+            archiveArtifacts artifacts: 'reports/*.html',
+                             allowEmptyArchive: true
         }
         failure {
-            echo 'Some tests failed — check the report!'
+            echo 'Tests failed — check console output!'
+            archiveArtifacts artifacts: 'reports/*.html',
+                             allowEmptyArchive: true
+        }
+        always {
+            echo 'Pipeline complete.'
         }
     }
 }

@@ -36,7 +36,7 @@ def driver():
     else:
         # Local Windows mode
         opts.add_argument("--start-maximized")
-    
+
     # for jenkins execution
     driver = webdriver.Chrome(
         service=Service(),options=opts
@@ -52,11 +52,25 @@ def driver():
 def test_data():
     return {
         "valid_user": {
-            "email": "fzcheck2022@gmail.com",
-            "password": "JustCheck"
+            "email": os.getenv("TEST_EMAIL"),
+            "password": os.getenv("TEST_PASSWORD")
         },
         "invalid_user": {
-            "email": "wrong@wrong.com",
-            "password": "wrongpass"
+                            "email": os.getenv("INVALID_EMAIL", "wrong@wrong.com"),
+                            "password": os.getenv("INVALID_PASSWORD", "wrongpass")
         }
     }
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call" and report.failed:
+        driver = item.funcargs.get("driver")
+        if driver:
+            import os
+            os.makedirs("reports", exist_ok=True)
+            screenshot = f"reports/{item.name}.png"
+            driver.save_screenshot(screenshot)
+            print(f"\nScreenshot saved: {screenshot}")

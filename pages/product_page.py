@@ -28,8 +28,7 @@ class ProductPage(BasePage):
         ".product-image-wrapper")
     NAV_PRODUCT_MENU = (By.CSS_SELECTOR,"a[href='/products']")
     PRODUCT_NAMES = (By.CSS_SELECTOR,".productinfo p")
-    PRODUCT_PRICES = (By.CSS_SELECTOR,
-        ".productinfo h2")
+    PRODUCT_PRICES = (By.CSS_SELECTOR,".productinfo h2")
     VIEW_PRODUCT_LINKS = (By.CSS_SELECTOR,
         "a[href*='product_details']")
     ADD_TO_CART_BUTTONS = (By.CSS_SELECTOR,
@@ -43,28 +42,28 @@ class ProductPage(BasePage):
 
     #SEARCH_RESULTS_HEADING = (By.XPATH, "//h2[contains(text(),'Searched Products')]")
     #SEARCH_RESULTS_HEADING = (By.CSS_SELECTOR, "#searched-products")
-    SEARCHED_PRODUCT_NAMES = (By.CSS_SELECTOR,
-        "#searched-products .productinfo p")
+    SEARCHED_PRODUCT_NAMES = (By.CSS_SELECTOR, ".productinfo p")
+    #SEARCHED_PRODUCT_NAMES = (By.CSS_SELECTOR, "#div.features_items")
 
     # ─────────────────────────────────────────
     # LOCATORS — Single Product Detail Page
     # ─────────────────────────────────────────
     PRODUCT_DETAIL_NAME = (By.CSS_SELECTOR,
         ".product-information h2")
-    PRODUCT_DETAIL_PRICE = (By.CSS_SELECTOR,
-        ".product-information span span")
-    PRODUCT_DETAIL_CATEGORY = (By.CSS_SELECTOR,
-        ".product-information p:nth-child(3)")
-    PRODUCT_DETAIL_AVAILABILITY = (By.CSS_SELECTOR,
-        ".product-information p:nth-child(4)")
-    PRODUCT_DETAIL_BRAND = (By.CSS_SELECTOR,
-        ".product-information p:nth-child(6)")
+    PRODUCT_DETAIL_PRICE = (By.CSS_SELECTOR,".product-information span span")
+    PRODUCT_DETAIL_CATEGORY = (By.CSS_SELECTOR, ".product-information p:nth-child(3)")
+    #PRODUCT_DETAIL_CATEGORY = (By.CSS_SELECTOR, ".product-information p:nth-child(1)")
+
+    #PRODUCT_DETAIL_AVAILABILITY = (By.CSS_SELECTOR, ".product-information p:nth-child(4)")
+    PRODUCT_DETAIL_AVAILABILITY = (By.CSS_SELECTOR, ".product-information p:nth-child(6)")
+    #PRODUCT_DETAIL_BRAND = (By.CSS_SELECTOR,".product-information p:nth-child(6)")
+    PRODUCT_DETAIL_BRAND = (By.CSS_SELECTOR, ".product-information p:nth-child(8)")
+
     QUANTITY_INPUT = (By.ID,
         "quantity")
     ADD_TO_CART_BTN = (By.CSS_SELECTOR,
         "button.btn.btn-default.cart")
-    WRITE_REVIEW_LINK = (By.LINK_TEXT,
-        "Write Your Review")
+    WRITE_REVIEW_LINK = (By.LINK_TEXT, "Write Your Review")
 
     # ─────────────────────────────────────────
     # LOCATORS — Cart Modal Popup
@@ -176,10 +175,10 @@ class ProductPage(BasePage):
 
     def get_searched_product_names(self):
         try:
-            results = WebDriverWait(self.driver, 15).until(  # ✅ longer timeout
-                EC.visibility_of_all_elements_located(  # ✅ visibility not just presence
-                    #self.SEARCHED_PRODUCT_NAMES
-                    self.SEARCH_RESULTS_HEADING
+            results = WebDriverWait(self.driver, 15).until(
+                EC.visibility_of_all_elements_located(
+                    self.SEARCHED_PRODUCT_NAMES
+                    #self.SEARCH_RESULTS_HEADING
                 )
             )
             return [r.text for r in results if r.text.strip()]  # ✅ filter empty strings

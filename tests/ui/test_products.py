@@ -61,8 +61,8 @@ class TestProducts:
     @pytest.mark.productregression
     def test_product_names_not_empty(self):
         """Verify all product names have text"""
-        driver.get(f"{BASE_URL}/products")
-        product = ProductPage(driver)
+        self.driver.get(f"{BASE_URL}/products")
+        product = ProductPage(self.driver)
 
         names = product.get_all_product_names()
         assert len(names) > 0, "No product names found"
@@ -73,10 +73,11 @@ class TestProducts:
 
     @pytest.mark.regression
     @pytest.mark.productregression
+    @pytest.mark.regression1
     def test_product_prices_displayed(self):
         """Verify all products have a price"""
-        driver.get(f"{BASE_URL}/products")
-        product = ProductPage(driver)
+        self.driver.get(f"{BASE_URL}/products")
+        product = ProductPage(self.driver)
 
         prices = product.get_all_product_prices()
         assert len(prices) > 0, "No prices found"
@@ -113,6 +114,7 @@ class TestProducts:
 
     @pytest.mark.regression
     @pytest.mark.productregression
+    @pytest.mark.regression1
     def test_search_results_match_term(self):
         """Verify search results are relevant to search term"""
         self.driver.get(f"{BASE_URL}/products")
@@ -146,7 +148,7 @@ class TestProducts:
         assert name != "", "Product name should not be empty"
 
     @pytest.mark.regression
-    @pytest.mark.productregression
+    @pytest.mark.productregression1
     def test_product_detail_has_all_info(self,driver):
         """Verify product detail page shows all required info"""
         driver.get(f"{BASE_URL}/products")
@@ -163,24 +165,25 @@ class TestProducts:
     @pytest.mark.productregression
     def test_add_to_cart_opens_modal(self):
         """Verify Add to Cart button opens the modal"""
-        driver.get(f"{BASE_URL}/product_details/1")
-        product = ProductPage(driver)
+        self.driver.get(f"{BASE_URL}/product_details/1")
+        product = ProductPage(self.driver)
 
         product.add_to_cart()
         product.continue_shopping()
 
         # Verify we stayed on same page
-        assert "product_details" in driver.current_url
+        assert "product_details" in self.driver.current_url
 
-    @pytest.mark.regression
-    @pytest.mark.productregression
+
+    @pytest.mark.productregression1
     def test_set_quantity_before_add_to_cart(self):
         """Verify quantity can be changed before adding to cart"""
-        driver.get(f"{BASE_URL}/product_details/1")
-        product = ProductPage(driver)
+        self.driver.get(f"{BASE_URL}/product_details/1")
+        product = ProductPage(self.driver)
 
         product.set_quantity(3)
         product.add_to_cart()
-        product.continue_shopping()
+        product.view_cart_from_modal()
+        #product.continue_shopping()
 
         assert product.is_review_section_visible()
