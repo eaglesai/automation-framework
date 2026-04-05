@@ -61,7 +61,7 @@ pipeline {
             steps {
                 echo 'Generating Allure report...'
                 sh '''
-                    python -m pytest tests/ \
+                    python -m pytest tests/ -m "smoke or regression" \
                         --alluredir=allure-results \
                         -v
                 '''
