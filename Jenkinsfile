@@ -21,17 +21,17 @@ pipeline {
             }
         }
 
-        stage('Smoke Tests') {
+        stage('UI Smoke Tests') {
             steps {
                 echo 'Running Smoke Tests...'
-                sh 'python -m pytest tests/smoke/'
+                sh 'python -m pytest tests/ui/'
             }
         }
 
-        stage('Regression Tests') {
+        stage('UI Regression Tests') {
             steps {
                 echo 'Running Regression Tests...'
-                sh 'python -m pytest tests/regression/'
+                sh 'python -m pytest tests/ui/'
             }
         }
     }
