@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'python:3.11'
-            args '--user root'
+            image 'selenium/standalone-chrome:latest'  // Chrome + ChromeDriver built in!
+            args '--user root -v /dev/shm:/dev/shm'
         }
     }
 
