@@ -24,14 +24,14 @@ pipeline {
         stage('UI Smoke Tests') {
             steps {
                 echo 'Running Smoke Tests...'
-                sh 'python -m pytest tests/ui/'
+                sh 'python -m pytest tests/ui/ -m smoke'
             }
         }
 
         stage('UI Regression Tests') {
             steps {
                 echo 'Running Regression Tests...'
-                sh 'python -m pytest tests/ui/'
+                sh 'python -m pytest tests/ui/ -m regression'
             }
         }
     }
