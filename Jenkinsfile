@@ -7,8 +7,8 @@ pipeline {
     }
 
     environment {
-        TEST_EMAIL    = credentials('fzcheck2022@gmail.com')
-        TEST_PASSWORD = credentials('JustCheck')
+        TEST_EMAIL    = credentials('test-email')
+        TEST_PASSWORD = credentials('test-password')
         BASE_URL      = 'https://www.automationexercise.com'
     }
 
