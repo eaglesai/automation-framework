@@ -58,6 +58,7 @@ class TestProducts:
             f"Expected products but found {count}"
 
     @pytest.mark.regression
+    @pytest.mark.productregression
     def test_product_names_not_empty(self):
         """Verify all product names have text"""
         driver.get(f"{BASE_URL}/products")
@@ -71,6 +72,7 @@ class TestProducts:
                 f"Found empty product name in list"
 
     @pytest.mark.regression
+    @pytest.mark.productregression
     def test_product_prices_displayed(self):
         """Verify all products have a price"""
         driver.get(f"{BASE_URL}/products")
@@ -110,6 +112,7 @@ class TestProducts:
             f"No results found for '{search_term}'"
 
     @pytest.mark.regression
+    @pytest.mark.productregression
     def test_search_results_match_term(self):
         """Verify search results are relevant to search term"""
         self.driver.get(f"{BASE_URL}/products")
@@ -131,6 +134,7 @@ class TestProducts:
     @pytest.mark.smoke
     @pytest.mark.product
     @pytest.mark.regression
+    @pytest.mark.productregression
     def test_product_detail_page_loads(self,driver):
         """Click first product and verify detail page"""
         driver.get(f"{BASE_URL}/products")
@@ -142,6 +146,7 @@ class TestProducts:
         assert name != "", "Product name should not be empty"
 
     @pytest.mark.regression
+    @pytest.mark.productregression
     def test_product_detail_has_all_info(self,driver):
         """Verify product detail page shows all required info"""
         driver.get(f"{BASE_URL}/products")
@@ -155,6 +160,7 @@ class TestProducts:
         assert product.get_product_brand() != ""
 
     @pytest.mark.regression
+    @pytest.mark.productregression
     def test_add_to_cart_opens_modal(self):
         """Verify Add to Cart button opens the modal"""
         driver.get(f"{BASE_URL}/product_details/1")
@@ -167,6 +173,7 @@ class TestProducts:
         assert "product_details" in driver.current_url
 
     @pytest.mark.regression
+    @pytest.mark.productregression
     def test_set_quantity_before_add_to_cart(self):
         """Verify quantity can be changed before adding to cart"""
         driver.get(f"{BASE_URL}/product_details/1")
