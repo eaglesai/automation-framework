@@ -33,8 +33,9 @@ pipeline {
                 echo 'Running Regression Tests...'
                 sh 'python -m pytest tests/ui/ -m regression'
             }
-        */
+
         }
+        */
     }
 
     post {
