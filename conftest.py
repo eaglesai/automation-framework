@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -13,7 +15,29 @@ def driver():
     opts.add_argument("--disable-notifications")
     opts.add_argument("--disable-popup-blocking")
     opts.add_experimental_option("excludeSwitches", ["enable-logging"])
+    # for jenkins execution
+    '''
+    opts.add_argument("--headless")
+    opts.add_argument("--no-sandbox")
+    opts.add_argument("--disable-dev-shm-usage")
+    opts.add_argument("--disable-gpu")
+    opts.add_argument("--window-size=1920,1080")
+    '''
+    #------------------------------------
+    is_ci = os.getenv("CI") or os.getenv("JENKINS_URL")
 
+    if is_ci:
+        # Jenkins/Docker mode
+        opts.add_argument("--headless")
+        opts.add_argument("--no-sandbox")
+        opts.add_argument("--disable-dev-shm-usage")
+        opts.add_argument("--disable-gpu")
+        opts.add_argument("--window-size=1920,1080")
+    else:
+        # Local Windows mode
+        opts.add_argument("--start-maximized")
+    
+    # for jenkins execution
     driver = webdriver.Chrome(
         service=Service(),options=opts
     )
