@@ -1,4 +1,5 @@
 import pytest
+import allure
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pages.home_page import HomePage
@@ -12,7 +13,7 @@ from selenium.common.exceptions import (
 
 BASE_URL = "https://www.automationexercise.com"
 
-
+@allure.feature("Test Result for Product Page")
 class TestProducts:
 
     # ─────────────────────────────────────────
@@ -46,17 +47,23 @@ class TestProducts:
         assert product.is_products_page_displayed(), \
             "Products page heading not visible"
 
+    @allure.story("Navigate to product page")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("Products are displayed")
     @pytest.mark.smoke
     @pytest.mark.product
     def test_products_are_displayed(self,driver):
         """Verify at least 1 product is visible"""
         driver.get(f"{BASE_URL}/products")
         product = ProductPage(driver)
+        with allure.step("Verify that products are displayed"):
+            count = product.get_product_count()
+            assert count > 0, \
+                f"Expected products but found {count}"
 
-        count = product.get_product_count()
-        assert count > 0, \
-            f"Expected products but found {count}"
-
+    @allure.story("Navigate to product page")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("Verify all product names have text")
     @pytest.mark.regression
     @pytest.mark.productregression
     def test_product_names_not_empty(self):
@@ -64,13 +71,17 @@ class TestProducts:
         self.driver.get(f"{BASE_URL}/products")
         product = ProductPage(self.driver)
 
-        names = product.get_all_product_names()
-        assert len(names) > 0, "No product names found"
+        with allure.step("Verify that all product names have listed"):
+            names = product.get_all_product_names()
+            assert len(names) > 0, "No product names found"
 
-        for name in names:
-            assert name.strip() != "", \
-                f"Found empty product name in list"
+            for name in names:
+                assert name.strip() != "", \
+                    f"Found empty product name in list"
 
+    @allure.story("Navigate to the product detail page")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("Verify all products have a price")
     @pytest.mark.regression
     @pytest.mark.productregression
     @pytest.mark.regression1
@@ -79,12 +90,13 @@ class TestProducts:
         self.driver.get(f"{BASE_URL}/products")
         product = ProductPage(self.driver)
 
-        prices = product.get_all_product_prices()
-        assert len(prices) > 0, "No prices found"
+        with allure.step("Verify that all products have a price"):
+            prices = product.get_all_product_prices()
+            assert len(prices) > 0, "No prices found"
 
-        for price in prices:
-            assert "Rs." in price, \
-                f"Price format unexpected: {price}"
+            for price in prices:
+                assert "Rs." in price, \
+                    f"Price format unexpected: {price}"
 
     # ─────────────────────────────────────────
     # SEARCH TESTS
@@ -112,6 +124,9 @@ class TestProducts:
         assert len(results) > 0, \
             f"No results found for '{search_term}'"
 
+    @allure.story("Navigate to the product and search items")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("Verify searched product page")
     @pytest.mark.regression
     @pytest.mark.productregression
     @pytest.mark.regression1
@@ -119,20 +134,23 @@ class TestProducts:
         """Verify search results are relevant to search term"""
         self.driver.get(f"{BASE_URL}/products")
         product = ProductPage(self.driver)
+        with allure.step("Verify search results are relevant to search term"):
+            search_term = "Top"
+            product.search_product(search_term)
 
-        search_term = "Top"
-        product.search_product(search_term)
-
-        results = product.get_searched_product_names()
-        assert any(
-            search_term.lower() in name.lower()
-            for name in results
-        ), f"No results contain '{search_term}'"
+            results = product.get_searched_product_names()
+            assert any(
+                search_term.lower() in name.lower()
+                for name in results
+            ), f"No results contain '{search_term}'"
 
     # ─────────────────────────────────────────
     # PRODUCT DETAIL TESTS
     # ─────────────────────────────────────────
 
+    @allure.story("Navigate to the product and detail page")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("Verify searched product detail page")
     @pytest.mark.smoke
     @pytest.mark.product
     @pytest.mark.regression
@@ -141,11 +159,11 @@ class TestProducts:
         """Click first product and verify detail page"""
         driver.get(f"{BASE_URL}/products")
         product = ProductPage(driver)
+        with allure.step("Verify detail page loads"):
+            product.click_view_product(index=0)
 
-        product.click_view_product(index=0)
-
-        name = product.get_product_name()
-        assert name != "", "Product name should not be empty"
+            name = product.get_product_name()
+            assert name != "", "Product name should not be empty"
 
     @pytest.mark.regression
     @pytest.mark.productregression1
@@ -174,16 +192,18 @@ class TestProducts:
         # Verify we stayed on same page
         assert "product_details" in self.driver.current_url
 
-
+    @allure.story("Navigate to the product and add to the cart")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("Verify quantity can be changed before adding to cart"")
     @pytest.mark.productregression1
     def test_set_quantity_before_add_to_cart(self):
         """Verify quantity can be changed before adding to cart"""
         self.driver.get(f"{BASE_URL}/product_details/1")
         product = ProductPage(self.driver)
+        with allure.step("Verify quantity can be changed before adding to cart"):
+            product.set_quantity(3)
+            product.add_to_cart()
+            product.view_cart_from_modal()
+            #product.continue_shopping()
 
-        product.set_quantity(3)
-        product.add_to_cart()
-        product.view_cart_from_modal()
-        #product.continue_shopping()
-
-        assert product.is_review_section_visible()
+            assert product.is_review_section_visible()
