@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -48,6 +49,7 @@ def driver():
     yield driver
     driver.quit()
 
+load_dotenv()
 @pytest.fixture(scope="session")
 def test_data():
     return {
@@ -69,8 +71,15 @@ def pytest_runtest_makereport(item, call):
     if report.when == "call" and report.failed:
         driver = item.funcargs.get("driver")
         if driver:
+            import allure
             import os
             os.makedirs("reports", exist_ok=True)
             screenshot = f"reports/{item.name}.png"
             driver.save_screenshot(screenshot)
+            # Attach to Allure report
+            allure.attach(
+                driver.get_screenshot_as_png(),
+                name=f"Failed: {item.name}",
+                attachment_type=allure.attachment_type.PNG
+            )
             print(f"\nScreenshot saved: {screenshot}")

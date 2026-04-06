@@ -194,7 +194,7 @@ class TestProducts:
 
     @allure.story("Navigate to the product and add to the cart")
     @allure.severity(allure.severity_level.NORMAL)
-    @allure.title("Verify quantity can be changed before adding to cart"")
+    @allure.title("Verify quantity can be changed before adding to cart")
     @pytest.mark.productregression1
     def test_set_quantity_before_add_to_cart(self):
         """Verify quantity can be changed before adding to cart"""
