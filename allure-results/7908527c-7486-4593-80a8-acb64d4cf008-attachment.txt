@@ -1,6 +1,0 @@
-
->>> Typing: Jeans
->>> URL before search: https://www.automationexercise.com/products
->>> URL after search: https://www.automationexercise.com/products?search=Jeans
->>> SEARCH_RESULTS_HEADING: ('xpath', "//h2[@class='title text-center' and contains(text(),'Searched Products')]")
->>> Search results container FOUND!
