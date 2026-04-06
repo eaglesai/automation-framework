@@ -179,31 +179,33 @@ class TestProducts:
         assert product.get_product_availability() != ""
         assert product.get_product_brand() != ""
 
+    @allure.story("Navigate to the product and add to the cart")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.title("Verify quantity can be changed before adding to cart")
     @pytest.mark.regression
     @pytest.mark.productregression
     def test_add_to_cart_opens_modal(self):
         """Verify Add to Cart button opens the modal"""
         self.driver.get(f"{BASE_URL}/product_details/1")
         product = ProductPage(self.driver)
+        with allure.step("Verify Add to Cart button opens the modal"):
 
-        product.add_to_cart()
-        product.continue_shopping()
+            product.add_to_cart()
+            product.continue_shopping()
 
-        # Verify we stayed on same page
-        assert "product_details" in self.driver.current_url
+            # Verify we stayed on same page
+            assert "product_details" in self.driver.current_url
 
-    @allure.story("Navigate to the product and add to the cart")
-    @allure.severity(allure.severity_level.NORMAL)
-    @allure.title("Verify quantity can be changed before adding to cart")
-    @pytest.mark.productregression1
+
+    @pytest.mark.productregression
     def test_set_quantity_before_add_to_cart(self):
         """Verify quantity can be changed before adding to cart"""
         self.driver.get(f"{BASE_URL}/product_details/1")
         product = ProductPage(self.driver)
-        with allure.step("Verify quantity can be changed before adding to cart"):
-            product.set_quantity(3)
-            product.add_to_cart()
-            product.view_cart_from_modal()
-            #product.continue_shopping()
 
-            assert product.is_review_section_visible()
+        product.set_quantity(3)
+        product.add_to_cart()
+        product.view_cart_from_modal()
+        # product.continue_shopping()
+
+        assert product.is_review_section_visible()
