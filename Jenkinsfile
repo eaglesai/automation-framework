@@ -82,7 +82,7 @@ pipeline {
         }
         always {
             echo 'Pipeline complete.'
-            allure([includeProperties: false, jdk: '', results: [[path: 'allure-results']]])
+            allure([includeProperties: false, jdk: '', commandline: 'allure', results: [[path: 'allure-results']]])
             archiveArtifacts artifacts: 'reports/*.html',allowEmptyArchive: true
         }
     }
