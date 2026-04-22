@@ -21,8 +21,11 @@ class MouseAction:
         self.driver = driver
         self.actions = ActionChains(self.driver)
         self.wait = WebDriverWait(self.driver, 10)
+        self.xPixel = 0
+        self.yPixel = 0
 
-
+    xPixel = 100
+    yPixel = 500
 
     def left_click(self, locator):
         try:
@@ -31,21 +34,27 @@ class MouseAction:
 
         except ElementClickInterceptedException:
             element = self.wait.until(EC.presence_of_element_located(locator))
-            ActionChains(self.driver) \
-                .move_to_element(element) \
-                .click() \
-                .perform()
+            ActionChains(self.driver).move_to_element(element).click().perform()
 
     def scroll_down(self, locator):
-        self.driver.execute_script("window.scrollBy(0, 1000)")
+        self.driver.execute_script(f"window.scrollBy(-{self.xPixel}, {self.yPixel});")
 
     def scroll_up(self, locator):
-        self.driver.execute_script("window.scrollBy(0, 1000)")
+        self.driver.execute_script(f"window.scrollBy({self.xPixel}, -{self.yPixel});")
+
+    def scroll_right(self, locator):
+        self.driver.execute_script(f"window.scrollBy({self.xPixel}, {self.yPixel});")
+
+    def scroll_left(self, locator):
+        self.driver.execute_script(f"window.scrollBy(-{self.xPixel}, -{self.yPixel});")
+
+    def scroll_to_top(self, locator):
+        self.driver.execute_script("window.scrollTo(0, 0)")
 
     def move_to_element(self, locator):
         self.driver.execute_script("window.scrollBy(0, 1000)")
 
     def scroll_to_bottom(self, locator):
-        self.driver.execute_script("window.scrollBy(0, document.body.scrollHeight)")
+        self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
 
 
