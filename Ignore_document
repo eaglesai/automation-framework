@@ -1,0 +1,630 @@
+Fix 1 — ActionChains for mouse/keyboard events
+Update pages/base_page.py — add these methods:
+pythonfrom selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
+
+class BasePage:
+
+    def __init__(self, driver):
+        self.driver = driver
+        self.wait = WebDriverWait(driver, 10)
+        self.actions = ActionChains(driver)   # ← add this
+
+    # ─────────────────────────────────────────
+    # MOUSE ACTIONS
+    # ─────────────────────────────────────────
+
+    def hover(self, locator):
+        """Hover over an element — triggers dropdown menus"""
+        element = self.find_element(locator)
+        self.actions.move_to_element(element).perform()
+
+    def double_click(self, locator):
+        """Double click an element"""
+        element = self.find_element(locator)
+        self.actions.double_click(element).perform()
+
+    def right_click(self, locator):
+        """Right click — context menu"""
+        element = self.find_element(locator)
+        self.actions.context_click(element).perform()
+
+    def drag_and_drop(self, source_locator, target_locator):
+        """Drag element from source and drop on target"""
+        source = self.find_element(source_locator)
+        target = self.find_element(target_locator)
+        self.actions.drag_and_drop(source, target).perform()
+
+    def slow_type(self, locator, text):
+        """Type character by character — useful for autocomplete fields"""
+        element = self.find_element(locator)
+        element.clear()
+        for char in text:
+            element.send_keys(char)
+
+    # ─────────────────────────────────────────
+    # KEYBOARD ACTIONS
+    # ─────────────────────────────────────────
+
+    def press_enter(self, locator):
+        """Press Enter key on an element"""
+        self.find_element(locator).send_keys(Keys.ENTER)
+
+    def press_tab(self, locator):
+        """Press Tab to move focus to next field"""
+        self.find_element(locator).send_keys(Keys.TAB)
+
+    def press_escape(self):
+        """Press Escape — closes modals/dropdowns"""
+        self.actions.send_keys(Keys.ESCAPE).perform()
+
+    def select_all_and_delete(self, locator):
+        """Ctrl+A then Delete — clear a field completely"""
+        element = self.find_element(locator)
+        element.send_keys(Keys.CONTROL + "a")
+        element.send_keys(Keys.DELETE)
+
+    def scroll_down(self, pixels=500):
+        """Scroll down by pixels"""
+        self.driver.execute_script(
+            f"window.scrollBy(0, {pixels});"
+        )
+
+    def scroll_to_bottom(self):
+        """Scroll to bottom of page"""
+        self.driver.execute_script(
+            "window.scrollTo(0, document.body.scrollHeight);"
+        )
+
+Fix 2 — Cross-browser support
+Update conftest.py to accept a --browser flag:
+pythonimport pytest
+import os
+from dotenv import load_dotenv
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.edge.service import Service as EdgeService
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.edge.options import Options as EdgeOptions
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
+
+load_dotenv()
+BASE_URL = os.getenv("BASE_URL", "https://www.automationexercise.com")
+
+
+# ─────────────────────────────────────────────
+# ADD CUSTOM --browser COMMAND LINE OPTION
+# ─────────────────────────────────────────────
+def pytest_addoption(parser):
+    parser.addoption(
+        "--browser",
+        action="store",
+        default="chrome",
+        help="Browser to run tests: chrome | firefox | edge"
+    )
+
+
+@pytest.fixture(scope="session")
+def browser(request):
+    return request.config.getoption("--browser").lower()
+
+
+# ─────────────────────────────────────────────
+# DRIVER FIXTURE — supports all browsers
+# ─────────────────────────────────────────────
+@pytest.fixture(scope="function")
+def driver(browser):
+    is_ci = os.getenv("CI") or os.getenv("JENKINS_URL")
+    driver = None
+
+    if browser == "chrome":
+        opts = ChromeOptions()
+        opts.add_argument("--start-maximized")
+        opts.add_argument("--disable-notifications")
+        opts.add_argument("--disable-popup-blocking")
+        if is_ci:
+            opts.add_argument("--headless=new")
+            opts.add_argument("--no-sandbox")
+            opts.add_argument("--disable-dev-shm-usage")
+            opts.add_argument("--window-size=1920,1080")
+        driver = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager().install()),
+            options=opts
+        )
+
+    elif browser == "firefox":
+        opts = FirefoxOptions()
+        if is_ci:
+            opts.add_argument("--headless")
+        driver = webdriver.Firefox(
+            service=FirefoxService(GeckoDriverManager().install()),
+            options=opts
+        )
+
+    elif browser == "edge":
+        opts = EdgeOptions()
+        opts.add_argument("--start-maximized")
+        if is_ci:
+            opts.add_argument("--headless=new")
+            opts.add_argument("--no-sandbox")
+        driver = webdriver.Edge(
+            service=EdgeService(
+                EdgeChromiumDriverManager().install()
+            ),
+            options=opts
+        )
+
+    else:
+        raise ValueError(
+            f"Browser '{browser}' not supported. "
+            f"Use: chrome | firefox | edge"
+        )
+
+    driver.implicitly_wait(5)
+    yield driver
+    driver.quit()
+Update requirements.txt:
+webdriver-manager>=4.0.0
+Now run tests on any browser:
+bashpytest -m smoke --browser=chrome
+pytest -m smoke --browser=firefox
+pytest -m smoke --browser=edge
+Update pytest.ini to add browser marker:
+iniaddopts = -v --browser=chrome --html=reports/report.html --self-contained-html
+
+Fix 3 — BDD with pytest-bdd
+Install:
+bashpip install pytest-bdd
+Add to requirements.txt:
+pytest-bdd>=7.0.0
+Create folder structure:
+tests/
+└── bdd/
+    ├── features/
+    │   ├── login.feature
+    │   └── products.feature
+    └── step_defs/
+        ├── __init__.py
+        ├── test_login_steps.py
+        └── test_products_steps.py
+Create tests/bdd/features/login.feature:
+gherkinFeature: Login functionality
+  As a registered user
+  I want to login to automationexercise.com
+  So that I can access my account
+
+  Background:
+    Given I am on the login page
+
+  @smoke @login
+  Scenario: Successful login with valid credentials
+    When I enter valid email and password
+    And I click the login button
+    Then I should be logged in successfully
+
+  @regression @login
+  Scenario: Failed login with invalid credentials
+    When I enter invalid email and password
+    And I click the login button
+    Then I should see an error message
+
+  @regression @login
+  Scenario Outline: Login with multiple invalid credentials
+    When I enter "<email>" and "<password>"
+    And I click the login button
+    Then I should see an error message
+
+    Examples:
+      | email           | password    |
+      | wrong@test.com  | wrongpass   |
+      | nouser@test.com | password123 |
+Create tests/bdd/features/products.feature:
+gherkinFeature: Product search and detail
+  As a visitor
+  I want to search and view products
+  So that I can find items to purchase
+
+  Background:
+    Given I am on the products page
+
+  @smoke
+  Scenario: Products page loads successfully
+    Then I should see the All Products heading
+    And products should be displayed
+
+  @smoke
+  Scenario Outline: Search for products
+    When I search for "<product>"
+    Then I should see search results for "<product>"
+
+    Examples:
+      | product |
+      | Dress   |
+      | Top     |
+      | Jeans   |
+
+  @regression
+  Scenario: View product detail page
+    When I click on the first product
+    Then I should see the product detail page
+    And the product name should not be empty
+Create tests/bdd/step_defs/test_login_steps.py:
+pythonimport pytest
+from pytest_bdd import given, when, then, scenarios
+from pages.home_page import HomePage
+from pages.login_page import LoginPage
+import os
+
+scenarios('../features/login.feature')
+
+BASE_URL = os.getenv("BASE_URL", "https://www.automationexercise.com")
+
+
+@given("I am on the login page")
+def navigate_to_login(driver):
+    driver.get(f"{BASE_URL}/login")
+
+
+@when("I enter valid email and password")
+def enter_valid_credentials(driver, test_data):
+    login = LoginPage(driver)
+    login.login(
+        test_data["valid_user"]["email"],
+        test_data["valid_user"]["password"]
+    )
+
+
+@when("I enter invalid email and password")
+def enter_invalid_credentials(driver, test_data):
+    login = LoginPage(driver)
+    login.login(
+        test_data["invalid_user"]["email"],
+        test_data["invalid_user"]["password"]
+    )
+
+
+@when('I enter "<email>" and "<password>"')
+def enter_credentials(driver, email, password):
+    login = LoginPage(driver)
+    login.login(email, password)
+
+
+@when("I click the login button")
+def click_login(driver):
+    pass    # already handled inside login() method
+
+
+@then("I should be logged in successfully")
+def verify_logged_in(driver):
+    home = HomePage(driver)
+    assert home.is_logged_in(), \
+        "User should be logged in"
+
+
+@then("I should see an error message")
+def verify_error_shown(driver):
+    login = LoginPage(driver)
+    error = login.get_login_error()
+    assert error != "", "Error message should be displayed"
+Create tests/bdd/step_defs/test_products_steps.py:
+pythonimport pytest
+from pytest_bdd import given, when, then, scenarios
+from pages.product_page import ProductPage
+import os
+
+scenarios('../features/products.feature')
+
+BASE_URL = os.getenv("BASE_URL", "https://www.automationexercise.com")
+
+
+@given("I am on the products page")
+def navigate_to_products(driver):
+    driver.get(f"{BASE_URL}/products")
+
+
+@then("I should see the All Products heading")
+def verify_heading(driver):
+    product = ProductPage(driver)
+    assert product.is_products_page_displayed()
+
+
+@then("products should be displayed")
+def verify_products_shown(driver):
+    product = ProductPage(driver)
+    assert product.get_product_count() > 0
+
+
+@when('I search for "<product>"')
+def search_product(driver, product):
+    page = ProductPage(driver)
+    page.search_product(product)
+
+
+@then('I should see search results for "<product>"')
+def verify_search_results(driver, product):
+    page = ProductPage(driver)
+    assert page.is_search_results_displayed()
+    results = page.get_searched_product_names()
+    assert len(results) > 0
+
+
+@when("I click on the first product")
+def click_first_product(driver):
+    page = ProductPage(driver)
+    page.click_view_product(index=0)
+
+
+@then("I should see the product detail page")
+def verify_detail_page(driver):
+    assert "product_details" in driver.current_url
+
+
+@then("the product name should not be empty")
+def verify_product_name(driver):
+    page = ProductPage(driver)
+    assert page.get_product_name() != ""
+Run BDD tests:
+bashpytest tests/bdd/ -v
+pytest tests/bdd/ -v --browser=firefox
+
+Fix 4 — Locators in properties file
+Create config/locators.properties:
+properties# ─── Homepage ───────────────────────────────
+home.logo=img[alt='Website for automation practice']
+home.nav.login=a[href='/login']
+home.nav.logout=a[href='/logout']
+home.nav.cart=a[href='/view_cart']
+home.nav.products=a[href='/products']
+home.logged_in_as=li a b
+
+# ─── Login page ─────────────────────────────
+login.email=input[data-qa='login-email']
+login.password=input[data-qa='login-password']
+login.button=button[data-qa='login-button']
+login.error=p[style='color: red;']
+login.heading=//h2[text()='Login to your account']
+signup.name=input[data-qa='signup-name']
+signup.email=input[data-qa='signup-email']
+signup.button=button[data-qa='signup-button']
+
+# ─── Products page ───────────────────────────
+products.heading=//h2[contains(text(),'All Products')]
+products.list=.product-image-wrapper
+products.names=.productinfo p
+products.prices=.productinfo h2
+products.view_links=a[href*='product_details']
+products.search_input=search_product
+products.search_button=submit_search
+products.search_heading=//h2[contains(text(),'Searched Products')]
+
+# ─── Product detail ──────────────────────────
+product.name=.product-information h2
+product.price=.product-information span span
+product.category=.product-information p:nth-child(3)
+product.availability=.product-information p:nth-child(4)
+product.brand=.product-information p:nth-child(6)
+product.quantity=quantity
+product.add_to_cart=button.btn.btn-default.cart
+product.cart_modal=cartModal
+Create utils/locator_reader.py:
+pythonimport configparser
+import os
+from selenium.webdriver.common.by import By
+
+
+class LocatorReader:
+    """
+    Reads locators from locators.properties file.
+    Automatically detects locator type:
+    - starts with // or ( → XPath
+    - otherwise → CSS Selector
+    - plain word with no special chars → ID
+    """
+
+    _locators = {}
+
+    @classmethod
+    def load(cls, filepath="config/locators.properties"):
+        config = configparser.ConfigParser()
+
+        # configparser needs a section header — add a dummy one
+        with open(filepath, 'r') as f:
+            content = '[locators]\n' + f.read()
+
+        config.read_string(content)
+        cls._locators = dict(config['locators'])
+
+    @classmethod
+    def get(cls, key):
+        if not cls._locators:
+            cls.load()
+
+        value = cls._locators.get(key.lower())
+        if not value:
+            raise KeyError(
+                f"Locator '{key}' not found in locators.properties"
+            )
+
+        # Auto-detect locator type
+        if value.startswith("//") or value.startswith("(//"):
+            return (By.XPATH, value)
+        elif any(c in value for c in ['.', '[', '#', '>', ' ']):
+            return (By.CSS_SELECTOR, value)
+        else:
+            return (By.ID, value)
+Update pages/login_page.py to use properties file:
+pythonfrom selenium.webdriver.common.by import By
+from pages.base_page import BasePage
+from utils.locator_reader import LocatorReader
+
+
+class LoginPage(BasePage):
+
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.loc = LocatorReader()
+
+    def login(self, email, password):
+        self.type_text(self.loc.get("login.email"), email)
+        self.type_text(self.loc.get("login.password"), password)
+        self.click(self.loc.get("login.button"))
+
+    def get_login_error(self):
+        return self.get_text(self.loc.get("login.error"))
+
+    def is_login_page_displayed(self):
+        return self.is_displayed(self.loc.get("login.heading"))
+
+Fix 5 — Advanced Page Object Model
+Advanced POM adds Component Objects — reusable UI pieces shared across pages like the navigation bar, footer, and modals.
+Create pages/components/navbar.py:
+pythonfrom selenium.webdriver.common.by import By
+from pages.base_page import BasePage
+
+
+class NavBar(BasePage):
+    """
+    Navigation bar component — shared across ALL pages.
+    Any page that needs nav actions uses this component.
+    """
+
+    HOME = (By.CSS_SELECTOR, "a[href='/']")
+    PRODUCTS = (By.CSS_SELECTOR, "a[href='/products']")
+    CART = (By.CSS_SELECTOR, "a[href='/view_cart']")
+    LOGIN = (By.CSS_SELECTOR, "a[href='/login']")
+    LOGOUT = (By.CSS_SELECTOR, "a[href='/logout']")
+    CONTACT_US = (By.CSS_SELECTOR, "a[href='/contact_us']")
+    LOGGED_IN_AS = (By.CSS_SELECTOR, "li a b")
+    TEST_CASES = (By.CSS_SELECTOR, "a[href='/test_cases']")
+
+    def go_home(self):
+        self.click(self.HOME)
+
+    def go_to_products(self):
+        self.click(self.PRODUCTS)
+
+    def go_to_cart(self):
+        self.click(self.CART)
+
+    def go_to_login(self):
+        self.click(self.LOGIN)
+
+    def logout(self):
+        self.click(self.LOGOUT)
+
+    def is_logged_in(self):
+        return self.is_displayed(self.LOGGED_IN_AS)
+
+    def get_logged_in_user(self):
+        return self.get_text(self.LOGGED_IN_AS)
+Create pages/components/cart_modal.py:
+pythonfrom selenium.webdriver.common.by import By
+from pages.base_page import BasePage
+
+
+class CartModal(BasePage):
+    """
+    Cart confirmation modal — appears after Add to Cart.
+    Reused across product list and detail pages.
+    """
+
+    MODAL = (By.ID, "cartModal")
+    CONTINUE_SHOPPING = (By.CSS_SELECTOR,
+        "button[data-dismiss='modal']")
+    VIEW_CART = (By.CSS_SELECTOR,
+        ".modal-body a[href='/view_cart']")
+    PRODUCT_NAME_IN_MODAL = (By.CSS_SELECTOR,
+        ".modal-body h4")
+
+    def is_visible(self):
+        return self.is_displayed(self.MODAL)
+
+    def continue_shopping(self):
+        self.click(self.CONTINUE_SHOPPING)
+
+    def view_cart(self):
+        self.click(self.VIEW_CART)
+
+    def get_product_name(self):
+        return self.get_text(self.PRODUCT_NAME_IN_MODAL)
+Update pages/home_page.py to use components:
+pythonfrom selenium.webdriver.common.by import By
+from pages.base_page import BasePage
+from pages.components.navbar import NavBar
+
+
+class HomePage(BasePage):
+    """
+    Homepage — composes NavBar component
+    instead of duplicating nav locators
+    """
+
+    SEARCH_INPUT = (By.ID, "search_product")
+    SEARCH_BTN = (By.ID, "submit_search")
+    HERO_BANNER = (By.CSS_SELECTOR, ".carousel-inner")
+
+    def __init__(self, driver):
+        super().__init__(driver)
+        self.nav = NavBar(driver)   # ← component injection
+
+    def is_logo_visible(self):
+        return self.is_displayed(
+            (By.CSS_SELECTOR,
+             "img[alt='Website for automation practice']")
+        )
+
+    def is_hero_banner_visible(self):
+        return self.is_displayed(self.HERO_BANNER)
+
+    def search_product(self, product_name):
+        self.type_text(self.SEARCH_INPUT, product_name)
+        self.click(self.SEARCH_BTN)
+
+    # Nav actions delegated to component
+    def go_to_login(self):
+        self.nav.go_to_login()
+
+    def go_to_products(self):
+        self.nav.go_to_products()
+
+    def is_logged_in(self):
+        return self.nav.is_logged_in()
+
+    def logout(self):
+        self.nav.logout()
+
+Update folder structure
+automation-framework/
+├── config/
+│   └── locators.properties     ← Fix 4
+├── pages/
+│   ├── components/
+│   │   ├── __init__.py
+│   │   ├── navbar.py           ← Fix 5
+│   │   └── cart_modal.py       ← Fix 5
+│   ├── base_page.py            ← Fix 1 (ActionChains added)
+│   ├── home_page.py            ← Fix 5 (uses components)
+│   ├── login_page.py           ← Fix 4 (uses properties)
+│   └── product_page.py
+├── tests/
+│   ├── bdd/                    ← Fix 3
+│   │   ├── features/
+│   │   │   ├── login.feature
+│   │   │   └── products.feature
+│   │   └── step_defs/
+│   │       ├── test_login_steps.py
+│   │       └── test_products_steps.py
+│   └── ui/
+│       ├── test_homepage.py
+│       ├── test_login.py
+│       └── test_products.py
+├── utils/
+│   └── locator_reader.py       ← Fix 4
+├── conftest.py                 ← Fix 2 (cross-browser)
+├── pytest.ini
+├── Jenkinsfile
+└── requirements.txt

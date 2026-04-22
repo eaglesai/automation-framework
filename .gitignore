@@ -1,4 +1,10 @@
+Ignore_document
 allure-results/
 allure-report/
 reports/
 .env
+__pycache__/
+*.pyc
+.venv/
+.idea/
+Jenkinsfile/

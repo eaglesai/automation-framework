@@ -4,20 +4,14 @@ from pages.base_page import BasePage
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import (
-    NoSuchElementException,
-    TimeoutException,
-    StaleElementReferenceException
+    TimeoutException
 )
 
 class HomePage(BasePage):
     """
-    Locators and actions for automationexercise.com homepage
+    Locators and actions for automationexercise.com homepage -- these need to be moved
+    to the another separate page so that locators are all in one file.
     """
-
-    # ─────────────────────────────────────────
-    # LOCATORS — all in one place
-    # If the site changes, you only update here
-    # ─────────────────────────────────────────
     LOGO = (By.CSS_SELECTOR, "img[alt='Website for automation practice']")
     NAV_SIGNUP_LOGIN = (By.CSS_SELECTOR, "a[href='/login']")
     NAV_LOGOUT = (By.CSS_SELECTOR, "a[href='/logout']")
