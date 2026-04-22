@@ -57,4 +57,9 @@ class MouseAction:
     def scroll_to_bottom(self, locator):
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
 
+    def kep_press_enter(self):
+        ActionChains(self.driver).send_keys(Keys.ENTER).perform()
+    def key_press_escape(self):
+        ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+
 
