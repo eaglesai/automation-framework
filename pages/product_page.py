@@ -12,16 +12,7 @@ from pages.base_page import BasePage
 
 
 class ProductPage(BasePage):
-    """
-    Locators and actions for:
-    - /products       (all products list)
-    - /product_details (single product)
-    - search results
-    """
 
-    # ─────────────────────────────────────────
-    # LOCATORS — Products List Page
-    # ─────────────────────────────────────────
     #ALL_PRODUCTS_HEADING = (By.XPATH,"//h2[contains(text(),'All Products')]")
     ALL_PRODUCTS_HEADING = (By.CSS_SELECTOR,"h2.title.text-center")
     PRODUCT_LIST = (By.CSS_SELECTOR,

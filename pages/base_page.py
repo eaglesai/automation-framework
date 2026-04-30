@@ -7,12 +7,6 @@ from selenium.common.exceptions import (
     StaleElementReferenceException
 )
 class BasePage:
-    """
-    Parent class for all Page Objects.
-    Contains reusable methods every page will inherit.
-    Never write find_element directly in test files — always go through here.
-    """
-
     def __init__(self, driver):
         self.driver = driver
         self.wait = WebDriverWait(driver, 20)

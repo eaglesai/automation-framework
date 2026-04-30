@@ -1,14 +1,35 @@
 import os
+from encodings import iso2022_jp
 
 import pytest
 from dotenv import load_dotenv
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.edge.service import Service as EdgeService
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.edge.options import Options as EdgeOptions
 from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.opera import OperaDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
-BASE_URL = "https://www.automationexercise.com"
+from pages import actions
 
+load_dotenv()
+
+BASE_URL = os.getenv("https://www.automationexercise.com")
+# command line option
+def pytest_addoption(parser):
+    parser.addoption(
+        "--browser",
+        action="store",
+        dest="browser",
+        default="chrome",
+        choices=["chrome", "firefox", "edge", "opera"],
+        help="browser to run test chrome, firefox, edge, opera"
+    )
 @pytest.fixture(scope="function")
 def driver():
     opts = Options()
@@ -29,7 +50,7 @@ def driver():
 
     if is_ci:
         # Jenkins/Docker mode
-        opts.add_argument("--headless")
+        opts.add_argument("--hevadless")
         opts.add_argument("--no-sandbox")
         opts.add_argument("--disable-dev-shm-usage")
         opts.add_argument("--disable-gpu")
@@ -48,6 +69,62 @@ def driver():
     driver.implicitly_wait(30)
     yield driver
     driver.quit()
+
+@pytest.fixture(scope="session")
+def browser(request):
+    return request.config.getoption("--browser").lower()
+
+@pytest.fixture(scope="function")
+def driver(browser):
+    is_ci = os.getenv("CI") or os.getenv("JENKINS_URL")
+    driver= None
+    if browser == "chrome":
+        opts = ChromeOptions()
+        opts.add_argument("--start-maximized")
+        opts.add_argument("--disable-notifications")
+        opts.add_argument("--disable-popup-blocking")
+        if is_ci:
+            opts.add_argument("--headless=new")
+            opts.add_argument("--no-sandbox")
+            opts.add_argument("--disable-dev-shm-usage")
+            opts.add_argument("--window-size=1920,1080")
+        driver = webdriver.Chrome(
+            service=ChromeService(ChromeDriverManager().install()),
+            options=opts
+        )
+
+    elif browser == "firefox":
+        opts = FirefoxOptions()
+        if is_ci:
+            opts.add_argument("--headless")
+        driver = webdriver.Firefox(
+            service=FirefoxService(GeckoDriverManager().install()),
+            options=opts
+        )
+
+    elif browser == "edge":
+        opts = EdgeOptions()
+        opts.add_argument("--start-maximized")
+        if is_ci:
+            opts.add_argument("--headless=new")
+            opts.add_argument("--no-sandbox")
+        driver = webdriver.Edge(
+            service=EdgeService(
+                EdgeChromiumDriverManager().install()
+            ),
+            options=opts
+        )
+
+    else:
+        raise ValueError(
+            f"Browser '{browser}' not supported. "
+            f"Use: chrome | firefox | edge"
+        )
+
+    driver.implicitly_wait(5)
+    yield driver
+    driver.quit()
+
 
 load_dotenv()
 @pytest.fixture(scope="session")
