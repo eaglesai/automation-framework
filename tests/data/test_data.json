@@ -1,0 +1,11 @@
+{
+  "valid_user": {
+    "email": "fzcheck2022@gmail.com",
+    "password": "JustCheck"
+  },
+  "invalid_user": {
+      "email": "BadEmailid@gmail.com",
+      "password": "JustCheck"
+    }
+
+}

@@ -34,6 +34,7 @@ class HomePage(BasePage):
     def go_to_login(self):
         self.click(self.NAV_SIGNUP_LOGIN)
 
+
     def go_to_products(self):
         self.click(self.NAV_PRODUCTS)
 
@@ -61,3 +62,5 @@ class HomePage(BasePage):
             self.driver.execute_script("arguments[0].click();", close_btn)
         except TimeoutException:
             pass  # No popup appeared — that's fine, continue
+
+    

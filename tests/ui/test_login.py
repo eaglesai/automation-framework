@@ -4,8 +4,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
-
-BASE_URL = "https://www.automationexercise.com"
+from conftest import BASE_URL
+#BASE_URL = "https://www.automationexercise.com"
 
 @allure.feature("Login Page")
 class TestLogin:

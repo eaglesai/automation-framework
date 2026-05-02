@@ -1,3 +1,4 @@
+import json
 import os
 from encodings import iso2022_jp
 
@@ -14,12 +15,15 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.opera import OperaDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
-
+from pytest_bdd import scenarios
 from pages import actions
+import glob
+
 
 load_dotenv()
 
-BASE_URL = os.getenv("https://www.automationexercise.com")
+#BASE_URL = os.getenv("https://www.automationexercise.com")
+BASE_URL = os.getenv("BASE_URL")
 # command line option
 def pytest_addoption(parser):
     parser.addoption(
@@ -129,6 +133,12 @@ def driver(browser):
 load_dotenv()
 @pytest.fixture(scope="session")
 def test_data():
+    with open("tests/data/test_data.json") as f:
+        return json.load(f)
+    
+
+"""
+def test_data():
     return {
         "valid_user": {
             "email": os.getenv("TEST_EMAIL"),
@@ -139,7 +149,7 @@ def test_data():
                             "password": os.getenv("INVALID_PASSWORD", "wrongpass")
         }
     }
-
+"""
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield

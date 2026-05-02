@@ -1,9 +1,14 @@
 import pytest
 from selenium.webdriver.common.by import By
+
+from conftest import BASE_URL
+from dotenv import load_dotenv
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
+import os
+load_dotenv()
 
-BASE_URL = "https://www.automationexercise.com"
+#BASE_URL =os.getenv("BASE_URL") #"https://www.automationexercise.com"
 
 class TestHomepage:
 
