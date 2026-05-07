@@ -10,9 +10,7 @@ from pytest_bdd import scenarios, given, when, then, parsers
 scenarios('../features/login.feature')
 
 
-@given("I am on the login page")
-def navigate_to_login(driver):
-    driver.get(f"{BASE_URL}/login")
+
 
 @when("I enter valid email and password")
 def enter_valid_credentials(driver, test_data):

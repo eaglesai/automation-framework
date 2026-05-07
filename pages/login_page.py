@@ -42,3 +42,6 @@ class LoginPage(BasePage):
         self.type_text(self.SIGNUP_NAME, name)
         self.type_text(self.SIGNUP_EMAIL, email)
         self.click(self.SIGNUP_BUTTON)
+
+    def click_login(self):
+        self.click(self.LOGIN_BUTTON)

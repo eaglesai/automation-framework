@@ -6,6 +6,9 @@
   "invalid_user": {
       "email": "BadEmailid@gmail.com",
       "password": "JustCheck"
-    }
-
+    },
+  "api_user": {
+    "email": "test2028now@yopmail.com",
+    "password": "test"
+  }
 }

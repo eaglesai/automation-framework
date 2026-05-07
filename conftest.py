@@ -1,6 +1,5 @@
 import json
 import os
-from encodings import iso2022_jp
 
 import pytest
 from dotenv import load_dotenv
@@ -15,68 +14,17 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.opera import OperaDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
-from pytest_bdd import scenarios
+from pytest_bdd import scenarios, given, when, then, parsers
 from pages import actions
 import glob
-
+from utils.hybrid_context import HybridContext
+from pages.login_page import LoginPage
 
 load_dotenv()
 
 #BASE_URL = os.getenv("https://www.automationexercise.com")
 BASE_URL = os.getenv("BASE_URL")
-# command line option
-def pytest_addoption(parser):
-    parser.addoption(
-        "--browser",
-        action="store",
-        dest="browser",
-        default="chrome",
-        choices=["chrome", "firefox", "edge", "opera"],
-        help="browser to run test chrome, firefox, edge, opera"
-    )
-@pytest.fixture(scope="function")
-def driver():
-    opts = Options()
-    opts.add_argument("--start-maximized")
-    opts.add_argument("--disable-notifications")
-    opts.add_argument("--disable-popup-blocking")
-    opts.add_experimental_option("excludeSwitches", ["enable-logging"])
-    # for jenkins execution
-    '''
-    opts.add_argument("--headless")
-    opts.add_argument("--no-sandbox")
-    opts.add_argument("--disable-dev-shm-usage")
-    opts.add_argument("--disable-gpu")
-    opts.add_argument("--window-size=1920,1080")
-    '''
-    #------------------------------------
-    is_ci = os.getenv("CI") or os.getenv("JENKINS_URL")
-
-    if is_ci:
-        # Jenkins/Docker mode
-        opts.add_argument("--hevadless")
-        opts.add_argument("--no-sandbox")
-        opts.add_argument("--disable-dev-shm-usage")
-        opts.add_argument("--disable-gpu")
-        opts.add_argument("--window-size=1920,1080")
-    else:
-        # Local Windows mode
-        opts.add_argument("--start-maximized")
-
-    # for jenkins execution
-    driver = webdriver.Chrome(
-        service=Service(),options=opts
-    )
-    """
-    service=Service(ChromeDriverManager().install()),
-    """
-    driver.implicitly_wait(30)
-    yield driver
-    driver.quit()
-
-@pytest.fixture(scope="session")
-def browser(request):
-    return request.config.getoption("--browser").lower()
+API_BASE_URL = os.getenv("API_BASE_URL")
 
 @pytest.fixture(scope="function")
 def driver(browser):
@@ -130,12 +78,33 @@ def driver(browser):
     driver.quit()
 
 
-load_dotenv()
+@pytest.fixture(scope="function")
+def ctx():
+    context = HybridContext()
+    return context
+
+
+# command line option
+def pytest_addoption(parser):
+    parser.addoption(
+        "--browser",
+        action="store",
+        dest="browser",
+        default="chrome",
+        choices=["chrome", "firefox", "edge", "opera"],
+        help="browser to run test chrome, firefox, edge, opera"
+    )
+
+@pytest.fixture(scope="session")
+def browser(request):
+    return request.config.getoption("--browser").lower()
+
+
 @pytest.fixture(scope="session")
 def test_data():
     with open("tests/data/test_data.json") as f:
         return json.load(f)
-    
+
 
 """
 def test_data():
@@ -170,3 +139,9 @@ def pytest_runtest_makereport(item, call):
                 attachment_type=allure.attachment_type.PNG
             )
             print(f"\nScreenshot saved: {screenshot}")
+
+#------------------------------------------------
+
+@given("I am on the login page")
+def navigate_to_login(driver):
+    driver.get(f"{BASE_URL}/login")
