@@ -2,11 +2,13 @@ import requests
 import os
 from dotenv import load_dotenv
 from conftest import API_BASE_URL
+from conftest import API_BASE_URL
 load_dotenv()
-
-API_BASE_URL = os.getenv("API_BASE_URL")
-
-
+API_BASE_URL = (
+    os.getenv("BASE_URL") or
+    os.getenv("API_BASE_URL") or
+    "https://automationexercise.com"
+)
 class APIClient:
     """
     Reusable HTTP client for automationexercise.com API.

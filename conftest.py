@@ -21,11 +21,16 @@ import json
 from utils.hybrid_context import HybridContext
 from pages.login_page import LoginPage
 
-load_dotenv()
 
 #BASE_URL = os.getenv("https://www.automationexercise.com")
 BASE_URL = os.getenv("BASE_URL")
-API_BASE_URL = os.getenv("API_BASE_URL")
+load_dotenv()
+API_BASE_URL = (
+    os.getenv("BASE_URL") or
+    os.getenv("API_BASE_URL") or
+    "https://automationexercise.com"
+)
+
 DATA_MAP = {
     "login_data":   "data/test_data.json"
 }

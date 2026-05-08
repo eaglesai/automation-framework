@@ -47,6 +47,20 @@ environment {
                 '''
             }
         }
+              stage('Run BDD Cart Tests') {
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    sh '''
+                        . .venv/bin/activate
+                        pytest tests/bdd/step_defs/test_cart_steps.py -v \
+                            --alluredir=allure-results
+                    '''
+                }
+            }
+        }
+
+    }
+
 
     }
 
