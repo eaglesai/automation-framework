@@ -25,15 +25,17 @@ pipeline {
             }
         }
 
-        stage('Run BDD Login Tests') {
-            steps {
-                sh '''
-                    . .venv/bin/activate
-                    pytest tests/bdd/step_defs/test_login_steps.py -v \
-                        --alluredir=allure-results
-                '''
+     stage('Run BDD Login Tests') {
+    steps {
+        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+            sh '''
+                . .venv/bin/activate
+                pytest tests/bdd/step_defs/test_login_steps.py -v \
+                    --alluredir=allure-results
+            '''
             }
         }
+    }
 
         stage('Run BDD Hybrid Tests') {
             steps {
