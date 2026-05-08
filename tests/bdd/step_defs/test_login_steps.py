@@ -55,7 +55,6 @@ def verify_error_shown(driver):
         error = login.get_login_error()
         assert error != "", "Error message should be displayed"
     except TimeoutException:
-        # On headless CI the error element may not appear
-        # Verify we are still on the login page instead
+        # Headless CI fallback — stay on login page confirms failure
         assert "login" in driver.current_url.lower(), \
             "Expected to remain on login page after failed login"
