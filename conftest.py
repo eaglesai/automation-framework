@@ -116,7 +116,7 @@ def scenario_data(request):
             filepath = f"tests/data/{filename}.json"
             with open(filepath) as f:
                 return json.load(f)
-    return None        # no tag — returns None quietly
+    return None
 
 """
 def test_data():
