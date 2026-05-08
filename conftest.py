@@ -43,9 +43,13 @@ def driver(browser):
             opts.add_argument("--no-sandbox")
             opts.add_argument("--disable-dev-shm-usage")
             opts.add_argument("--window-size=1920,1080")
-            opts.add_argument("--disable-blink-features=AutomationControlled")  # ← ADD
-            opts.add_experimental_option("excludeSwitches", ["enable-automation"])  # ← ADD
-            opts.add_experimental_option("useAutomationExtension", False)  # ← ADD
+            opts.add_argument("--disable-blink-features=AutomationControlled")
+            opts.add_experimental_option("excludeSwitches", ["enable-automation"])
+            opts.add_experimental_option("useAutomationExtension", False)
+        driver = webdriver.Chrome(  # ← ADD THIS BACK
+            service=ChromeService(ChromeDriverManager().install()),
+            options=opts
+        )
 
     elif browser == "firefox":
         opts = FirefoxOptions()
