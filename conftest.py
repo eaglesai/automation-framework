@@ -17,6 +17,7 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from pytest_bdd import scenarios, given, when, then, parsers
 from pages import actions
 import glob
+import json
 from utils.hybrid_context import HybridContext
 from pages.login_page import LoginPage
 
@@ -25,7 +26,9 @@ load_dotenv()
 #BASE_URL = os.getenv("https://www.automationexercise.com")
 BASE_URL = os.getenv("BASE_URL")
 API_BASE_URL = os.getenv("API_BASE_URL")
-
+DATA_MAP = {
+    "login_data":   "data/test_data.json"
+}
 @pytest.fixture(scope="function")
 def driver(browser):
     is_ci = os.getenv("CI") or os.getenv("JENKINS_URL")
@@ -105,6 +108,15 @@ def test_data():
     with open("tests/data/test_data.json") as f:
         return json.load(f)
 
+@pytest.fixture()
+def scenario_data(request):
+    for marker in request.node.own_markers:
+        if marker.name.startswith("data:"):
+            filename = marker.name.split("data:")[1].strip()
+            filepath = f"tests/data/{filename}.json"
+            with open(filepath) as f:
+                return json.load(f)
+    return None        # no tag — returns None quietly
 
 """
 def test_data():

@@ -15,8 +15,7 @@ class ProductPage(BasePage):
 
     #ALL_PRODUCTS_HEADING = (By.XPATH,"//h2[contains(text(),'All Products')]")
     ALL_PRODUCTS_HEADING = (By.CSS_SELECTOR,"h2.title.text-center")
-    PRODUCT_LIST = (By.CSS_SELECTOR,
-        ".product-image-wrapper")
+    PRODUCT_LIST = (By.CSS_SELECTOR,        ".product-image-wrapper")
     NAV_PRODUCT_MENU = (By.CSS_SELECTOR,"a[href='/products']")
     PRODUCT_NAMES = (By.CSS_SELECTOR,".productinfo p")
     PRODUCT_PRICES = (By.CSS_SELECTOR,".productinfo h2")

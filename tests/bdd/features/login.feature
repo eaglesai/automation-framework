@@ -20,13 +20,10 @@ Feature: Login functionality
     And I select the login button
     Then I should see an error message
 
-  @regression @login
-  Scenario Outline: Login with multiple invalid credentials
+  #Scenario Outline: Login with multiple invalid credentials
+
+  @regression @login @data:MultipleLoginValues
+  Scenario: Login with multiple invalid credentials
     When I enter "<email>" and "<password>"
     And I select the login button
     Then I should see an error message
-
-    Examples:
-      | email           | password    |
-      | wrong@test.com  | wrongpass   |
-      | nouser@test.com | password123 |
