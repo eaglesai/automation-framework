@@ -1,10 +1,11 @@
 pipeline {
     agent any
 
-    environment {
-        BASE_URL = "https://automationexercise.com"
+environment {
+    BASE_URL      = "https://automationexercise.com"
+    TEST_EMAIL    = "test2028now@yopmail.com"
+    TEST_PASSWORD = "test"
     }
-
     stages {
 
         stage('Checkout') {
